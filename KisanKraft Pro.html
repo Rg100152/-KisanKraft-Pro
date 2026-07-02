@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KisanKraft Pro – Smart Agri Booking</title>
+  <style>
+    :root {
+      --earth: #3E2723;
+      --earth-light: #5D4037;
+      --crop-green: #2E7D32;
+      --crop-light: #4CAF50;
+      --gold: #F57C00;
+      --gold-light: #FFB74D;
+      --wheat: #FFF8E1;
+      --soil: #8D6E63;
+      --white: #FFFDF7;
+      --gray: #F1F8E9;
+      --shadow: 0 8px 25px rgba(0,0,0,0.15);
+      --radius: 16px;
+      --transition: 0.25s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #F9F3E4; /* warm wheat background */
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d7ccc8' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      color: var(--earth);
+      min-height: 100vh;
+    }
+
+    /* App Container */
+    .app-wrapper {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* HEADER */
+    .mandi-header {
+      background: linear-gradient(135deg, var(--earth) 0%, var(--earth-light) 100%);
+      border-radius: 20px;
+      padding: 1.2rem 2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: var(--shadow);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pro-badge {
+      background: var(--crop-green);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .mandi-ticker {
+      background: rgba(255,255,255,0.15);
+      padding: 0.6rem 1.4rem;
+      border-radius: 30px;
+      backdrop-filter: blur(5px);
+      font-weight: 600;
+    }
+
+    .lang-switch {
+      background: var(--gold);
+      border: none;
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .lang-switch:hover { background: #e66a00; }
+
+    /* MAIN LAYOUT */
+    .workspace-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 1.5rem;
+    }
+
+    /* WIZARD PANEL */
+    .wizard-panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      min-height: 600px;
+    }
+
+    .step-card {
+      display: none;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    .step-card.active { display: block; }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h3 {
+      color: var(--earth);
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      border-left: 5px solid var(--crop-green);
+      padding-left: 1rem;
+    }
+
+    .step-num {
+      background: var(--crop-green);
+      color: white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+
+    /* Brand Grid */
+    .brand-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 1rem;
+    }
+
+    .logo-btn {
+      background: var(--gray);
+      border: 2px solid var(--soil);
+      border-radius: 12px;
+      padding: 1.2rem 0.5rem;
+      text-align: center;
+      font-weight: 700;
+      color: var(--earth);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1rem;
+    }
+
+    .logo-btn:hover {
+      border-color: var(--crop-green);
+      background: #E8F5E9;
+      transform: translateY(-2px);
+    }
+
+    .logo-btn.selected {
+      background: var(--crop-green);
+      color: white;
+      border-color: var(--crop-green);
+      box-shadow: 0 0 12px rgba(46,125,50,0.5);
+    }
+
+    /* Model List */
+    .model-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .model-item {
+      background: var(--gray);
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .model-item:hover { border-color: var(--gold); }
+    .model-item.selected {
+      border-color: var(--gold);
+      background: #FFF3E0;
+    }
+
+    /* Implements checkboxes */
+    .impl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .impl-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--gray);
+      padding: 0.8rem;
+      border-radius: 8px;
+    }
+
+    /* Form Inputs */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      font-weight: 600;
+      color: var(--earth);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--crop-green);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--crop-green);
+      color: white;
+    }
+
+    .btn-primary:hover { background: #1B5E20; }
+    .btn-secondary {
+      background: #ddd;
+      color: var(--earth);
+    }
+
+    .btn-secondary:hover { background: #bbb; }
+
+    /* BILLING SIDEBAR */
+    .billing-summary-panel {
+      position: sticky;
+      top: 1rem;
+      align-self: start;
+    }
+
+    .sticky-bill-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border-top: 5px solid var(--gold);
+    }
+
+    .ledger-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.7rem 0;
+      font-weight: 500;
+    }
+
+    .discount { color: #D32F2F; }
+    .total {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--earth);
+    }
+
+    hr {
+      border: 0.5px solid #ddd;
+      margin: 0.8rem 0;
+    }
+
+    /* Support FAB */
+    .fab-support {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--gold);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      z-index: 200;
+    }
+
+    .chat-modal {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      width: 300px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 201;
+    }
+
+    .chat-modal.open { display: block; }
+
+    /* Confetti canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @media (max-width: 900px) {
+      .workspace-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- HEADER -->
+    <header class="mandi-header">
+      <div class="brand-logo">
+        🌾 KisanKraft <span class="pro-badge">PRO</span>
+      </div>
+      <div class="mandi-ticker">Today's Wheat MSP: <strong>₹2,450/Qtl</strong> | Paddy: <strong>₹2,300/Qtl</strong></div>
+      <button class="lang-switch" onclick="alert('भाषा बदलने की सुविधा शीघ्र उपलब्ध होगी')">हिन्दी</button>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="workspace-layout">
+      <!-- WIZARD -->
+      <section class="wizard-panel">
+        <form id="agriForm" onsubmit="event.preventDefault();">
+          <!-- Step 1: Brand -->
+          <div class="step-card active" id="step-brand">
+            <h3><span class="step-num">1</span> Select Tractor Brand</h3>
+            <div class="brand-grid" id="brandButtons"></div>
+          </div>
+
+          <!-- Step 2: Category Router -->
+          <div class="step-card" id="step-category">
+            <h3><span class="step-num">2</span> What do you need?</h3>
+            <div class="brand-grid">
+              <div class="logo-btn" onclick="setCategory('tractor')">🚜 Full Tractor</div>
+              <div class="logo-btn" onclick="setCategory('implement')">🔧 Implements Only</div>
+            </div>
+          </div>
+
+          <!-- Step 3a: Tractor Model Selection -->
+          <div class="step-card" id="step-tractor-model">
+            <h3><span class="step-num">3</span> Choose Model <span id="selectedBrandLabel"></span></h3>
+            <div class="model-list" id="tractorList"></div>
+          </div>
+
+          <!-- Step 3b: Implement only selection -->
+          <div class="step-card" id="step-implement-select">
+            <h3><span class="step-num">3</span> Select Implements</h3>
+            <div class="impl-grid" id="implList"></div>
+          </div>
+
+          <!-- Step 4: Add-on Implements (for tractor bookings) -->
+          <div class="step-card" id="step-addons">
+            <h3><span class="step-num">4</span> Attach Implements (Optional)</h3>
+            <div class="impl-grid" id="addonImplList"></div>
+          </div>
+
+          <!-- Step 5: Verification -->
+          <div class="step-card" id="step-verify">
+            <h3><span class="step-num">5</span> Kisan Verification</h3>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="farmerName" placeholder="Enter name as per Aadhaar" required>
+            </div>
+            <div class="form-group">
+              <label>Aadhaar Number (12 digits)</label>
+              <input type="text" id="aadhaar" placeholder="0000 0000 0000" maxlength="12" required>
+            </div>
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input type="tel" id="mobile" placeholder="10-digit number" required>
+              <button type="button" class="btn btn-primary" style="margin-top:10px;" onclick="sendOTP()">Send OTP (Simulated)</button>
+            </div>
+          </div>
+
+          <!-- Step 6: Delivery Schedule -->
+          <div class="step-card" id="step-schedule">
+            <h3><span class="step-num">6</span> Delivery / Pickup Date</h3>
+            <div class="form-group">
+              <label>Preferred Date</label>
+              <input type="date" id="deliveryDate" required>
+              <small style="color: var(--gold);">Peak season (Apr-May, Oct-Nov): additional ₹2,000 surcharge applies.</small>
+            </div>
+          </div>
+
+          <!-- Step 7: Cost Ledger & Subsidy -->
+          <div class="step-card" id="step-ledger">
+            <h3><span class="step-num">7</span> Cost Ledger & PM-Kisan Subsidy</h3>
+            <div id="ledgerDetail"></div>
+            <p style="margin-top:1rem; color: var(--crop-green);"><strong>15% Government Subsidy Applied</strong></p>
+          </div>
+
+          <!-- Step 8: Token Issuance -->
+          <div class="step-card" id="step-token">
+            <h3><span class="step-num">8</span> Booking Confirmed!</h3>
+            <div style="text-align:center; padding:2rem;">
+              <div style="font-size:5rem;">🎉</div>
+              <h2>Congratulations, <span id="farmerFinalName"></span>!</h2>
+              <p>Your booking token is:</p>
+              <h3 style="color:var(--crop-green); background:#E8F5E9; padding:1rem; border-radius:10px;" id="tokenDisplay"></h3>
+              <p>We'll contact you at <strong id="finalPhone"></strong></p>
+              <button class="btn btn-primary" onclick="resetApp()">Book Another Machine</button>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" id="prevBtn" onclick="prevStep()" disabled>⬅ Previous</button>
+            <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next ➡</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- BILLING SIDEBAR -->
+      <aside class="billing-summary-panel">
+        <div class="sticky-bill-card">
+          <h4 style="color:var(--earth); margin-bottom:1rem;">🧾 Live Cost (INR)</h4>
+          <div class="ledger-row"><span>Base Machine:</span><span id="baseCost">₹0</span></div>
+          <div class="ledger-row"><span>Implements:</span><span id="implCost">₹0</span></div>
+          <div class="ledger-row discount"><span>PM-Kisan Subsidy (15%):</span><span id="subsidyVal">-₹0</span></div>
+          <hr>
+          <div class="ledger-row total"><span>Net Token Amount:</span><span id="netTotal">₹0</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Support Chat FAB -->
+  <button class="fab-support" onclick="toggleChat()">💬</button>
+  <div class="chat-modal" id="chatModal">
+    <h4 style="margin-bottom:0.5rem;">Kisan Helpdesk</h4>
+    <p onclick="alert('FAQ: वारंटी 2 साल की होती है।')">📋 Warranty Info</p>
+    <p onclick="alert('नजदीकी डीलर: कृषि विज्ञान केंद्र, जिला मुख्यालय')">📍 Nearest Dealer</p>
+    <p onclick="alert('सब्सिडी: प्रधानमंत्री किसान योजना के तहत 15% की छूट।')">💰 Subsidy Policy</p>
+    <small style="color:gray;">*Simulated regional support</small>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <script>
+    // ===================== INVENTORY DATABASE =====================
+    const kisanKraftInventory = {
+      tractors: [
+        { id: "T1", brand: "Mahindra", name: "Arjun Novo 605 DI-i", hp: 57, drive: "4WD", price: 890000 },
+        { id: "T2", brand: "Mahindra", name: "Jivo 225 DI Mini", hp: 20, drive: "2WD", price: 415000 },
+        { id: "T3", brand: "Swaraj", name: "855 FE Heavy Duty", hp: 52, drive: "2WD", price: 780000 },
+        { id: "T4", brand: "Swaraj", name: "963 FE Premium", hp: 60, drive: "4WD", price: 1050000 },
+        { id: "T5", brand: "John Deere", name: "5310 GearPro", hp: 55, drive: "4WD", price: 1120000 },
+        { id: "T6", brand: "Massey Ferguson", name: "241 DI Maha Shakti", hp: 42, drive: "2WD", price: 660000 },
+        { id: "T7", brand: "Sonalika", name: "Tiger DI 65 Torque", hp: 65, drive: "4WD", price: 1180000 },
+        { id: "T8", brand: "Farmtrac", name: "60 PowerMax", hp: 55, drive: "2WD", price: 840000 }
+      ],
+      implements: [
+        { id: "I1", name: "Shaktiman Regular Light Rotavator", price: 115000, type: "Tillage" },
+        { id: "I2", name: "Fieldking Multi-Row Seed Drill", price: 85000, type: "Seeding" },
+        { id: "I3", name: "Mahindra Rigid Frame Cultivator", price: 45000, type: "Tillage" },
+        { id: "I4", name: "SoilMaster Reversible Hydraulic Plough", price: 140000, type: "Ploughing" }
+      ]
+    };
+
+    // ===================== APPLICATION STATE =====================
+    let state = {
+      currentStep: 1,
+      selectedBrand: null,
+      category: null, // 'tractor' or 'implement'
+      selectedTractor: null,
+      selectedImplements: [],   // for implement-only booking
+      addonImplements: [],      // for tractor add-ons
+      farmerName: '',
+      aadhaar: '',
+      mobile: '',
+      deliveryDate: '',
+      seasonalSurcharge: 0
+    };
+
+    const totalSteps = 8;
+
+    // ===================== DOM HELPERS =====================
+    function showStep(stepNum) {
+      document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+      const stepMap = {
+        1: 'step-brand',
+        2: 'step-category',
+        3: state.category === 'tractor' ? 'step-tractor-model' : 'step-implement-select',
+        4: state.category === 'tractor' ? 'step-addons' : 'step-verify',  // if implement-only, skip addons, go to verify
+        5: state.category === 'tractor' ? 'step-verify' : 'step-verify',
+        6: 'step-schedule',
+        7: 'step-ledger',
+        8: 'step-token'
+      };
+      const stepId = stepMap[stepNum];
+      if (stepId) document.getElementById(stepId).classList.add('active');
+      updateNavButtons();
+    }
+
+    function updateNavButtons() {
+      document.getElementById('prevBtn').disabled = (state.currentStep === 1);
+      const nextBtn = document.getElementById('nextBtn');
+      if (state.currentStep === totalSteps) {
+        nextBtn.style.display = 'none';
+      } else {
+        nextBtn.style.display = 'inline-block';
+        nextBtn.textContent = state.currentStep === 7 ? 'Confirm & Generate Token' : 'Next ➡';
+      }
+    }
+
+    function nextStep() {
+      if (validateStep(state.currentStep)) {
+        if (state.currentStep < totalSteps) {
+          state.currentStep++;
+          // Adjust step flow based on category
+          if (state.category === 'implement' && state.currentStep === 3) {
+            // skip addons for implement-only, go directly to verify
+            state.currentStep = 5; // step 4 (addons) skipped
+          } else if (state.category === 'implement' && state.currentStep === 4) {
+            state.currentStep = 5;
+          }
+          if (state.currentStep === 7) generateLedger();
+          if (state.currentStep === 8) finalizeBooking();
+          showStep(state.currentStep);
+        }
+      }
+    }
+
+    function prevStep() {
+      if (state.currentStep > 1) {
+        state.currentStep--;
+        // handle skipping addons if implement-only
+        if (state.category === 'implement' && state.currentStep === 4) state.currentStep = 3;
+        showStep(state.currentStep);
+      }
+    }
+
+    // ===================== UI INIT =====================
+    function renderBrandButtons() {
+      const brands = [...new Set(kisanKraftInventory.tractors.map(t => t.brand))];
+      const container = document.getElementById('brandButtons');
+      container.innerHTML = brands.map(b => `
+        <div class="logo-btn" onclick="selectBrand('${b}')" data-brand="${b}">${b}</div>
+      `).join('');
+    }
+
+    function selectBrand(brand) {
+      state.selectedBrand = brand;
+      document.querySelectorAll('#brandButtons .logo-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector(`.logo-btn[data-brand="${brand}"]`).classList.add('selected');
+    }
+
+    function setCategory(cat) {
+      state.category = cat;
+      document.querySelectorAll('#step-category .logo-btn').forEach(el => el.classList.remove('selected'));
+      event.target.classList.add('selected');
+      if (cat === 'tractor') {
+        renderTractorModels();
+      } else {
+        renderImplementSelection();
+      }
+    }
+
+    function renderTractorModels() {
+      const filtered = kisanKraftInventory.tractors.filter(t => t.brand === state.selectedBrand);
+      document.getElementById('selectedBrandLabel').textContent = `(${state.selectedBrand})`;
+      const list = document.getElementById('tractorList');
+      list.innerHTML = filtered.map(t => `
+        <div class="model-item" onclick="selectTractor('${t.id}')" data-id="${t.id}">
+          <div><strong>${t.name}</strong><br><small>${t.hp} HP | ${t.drive} | ₹${t.price.toLocaleString()}</small></div>
+        </div>
+      `).join('');
+    }
+
+    function selectTractor(id) {
+      const tractor = kisanKraftInventory.tractors.find(t => t.id === id);
+      state.selectedTractor = tractor;
+      document.querySelectorAll('#tractorList .model-item').forEach(el => el.classList.remove('selected'));
+      document.querySelector(`.model-item[data-id="${id}"]`).classList.add('selected');
+      updateBillingSidebar();
+    }
+
+    function renderImplementSelection() {
+      const impls = kisanKraftInventory.implements;
+      const grid = document.getElementById('implList');
+      grid.innerHTML = impls.map(imp => `
+        <label class="impl-check">
+          <input type="checkbox" value="${imp.id}" onchange="toggleImplement(this, 'selected')"> 
+          ${imp.name} (₹${imp.price})
+        </label>
+      `).join('');
+    }
+
+    function renderAddonImplements() {
+      const impls = kisanKraftInventory.implements;
+      const grid = document.getElementById('addonImplList');
+      grid.innerHTML = impls.map(imp => `
+        <label class="impl-check">
+          <input type="checkbox" value="${imp.id}" onchange="toggleImplement(this, 'addon')"> 
+          ${imp.name} (₹${imp.price})
+        </label>
+      `).join('');
+    }
+
+    function toggleImplement(checkbox, type) {
+      const id = checkbox.value;
+      const impl = kisanKraftInventory.implements.find(i => i.id === id);
+      if (type === 'selected') {
+        if (checkbox.checked) state.selectedImplements.push(impl);
+        else state.selectedImplements = state.selectedImplements.filter(i => i.id !== id);
+      } else if (type === 'addon') {
+        if (checkbox.checked) state.addonImplements.push(impl);
+        else state.addonImplements = state.addonImplements.filter(i => i.id !== id);
+      }
+      updateBillingSidebar();
+    }
+
+    function sendOTP() {
+      alert('OTP simulated: 123456 (Use this for demo)');
+    }
+
+    function generateLedger() {
+      let base = 0, implCost = 0;
+      if (state.selectedTractor) base = state.selectedTractor.price;
+      const allImplements = state.category === 'tractor' ? state.addonImplements : state.selectedImplements;
+      implCost = allImplements.reduce((sum, i) => sum + i.price, 0);
+      const seasonal = state.seasonalSurcharge;
+      const subtotal = base + implCost + seasonal;
+      const subsidy = Math.round(subtotal * 0.15);
+      const net = subtotal - subsidy;
+
+      document.getElementById('ledgerDetail').innerHTML = `
+        <div class="ledger-row"><span>Base Machine:</span><span>₹${base.toLocaleString()}</span></div>
+        <div class="ledger-row"><span>Implements:</span><span>₹${implCost.toLocaleString()}</span></div>
+        <div class="ledger-row"><span>Seasonal Surcharge:</span><span>₹${seasonal}</span></div>
+        <div class="ledger-row discount"><span>Subsidy (15%):</span><span>-₹${subsidy.toLocaleString()}</span></div>
+        <hr><div class="ledger-row total"><span>Net Payable:</span><span>₹${net.toLocaleString()}</span></div>
+      `;
+      updateBillingSidebar();
+    }
+
+    function updateBillingSidebar() {
+      let base = 0;
+      if (state.selectedTractor) base = state.selectedTractor.price;
+      const allImpl = state.category === 'tractor' ? state.addonImplements : state.selectedImplements;
+      const implCost = allImpl.reduce((s, i) => s + i.price, 0);
+      const subtotal = base + implCost + state.seasonalSurcharge;
+      const subsidy = Math.round(subtotal * 0.15);
+      const net = subtotal - subsidy;
+
+      document.getElementById('baseCost').textContent = `₹${base.toLocaleString()}`;
+      document.getElementById('implCost').textContent = `₹${implCost.toLocaleString()}`;
+      document.getElementById('subsidyVal').textContent = `-₹${subsidy.toLocaleString()}`;
+      document.getElementById('netTotal').textContent = `₹${net.toLocaleString()}`;
+    }
+
+    function finalizeBooking() {
+      state.farmerName = document.getElementById('farmerName').value.trim();
+      state.aadhaar = document.getElementById('aadhaar').value.trim();
+      state.mobile = document.getElementById('mobile').value.trim();
+      const token = 'KK-PRO-' + Math.random().toString(36).substr(2, 8).toUpperCase() + '-2026';
+      document.getElementById('farmerFinalName').textContent = state.farmerName;
+      document.getElementById('tokenDisplay').textContent = token;
+      document.getElementById('finalPhone').textContent = state.mobile;
+      launchConfetti();
+    }
+
+    function validateStep(step) {
+      switch(step) {
+        case 1: if (!state.selectedBrand) { alert('Please select a brand.'); return false; } break;
+        case 2: if (!state.category) { alert('Please choose Tractor or Implements.'); return false; } break;
+        case 3:
+          if (state.category === 'tractor' && !state.selectedTractor) { alert('Select a tractor model.'); return false; }
+          if (state.category === 'implement' && state.selectedImplements.length === 0) { alert('Select at least one implement.'); return false; }
+          break;
+        case 4: break; // addons optional
+        case 5:
+          const name = document.getElementById('farmerName').value.trim();
+          const aadhaar = document.getElementById('aadhaar').value.trim();
+          const mobile = document.getElementById('mobile').value.trim();
+          if (!name || aadhaar.length !== 12 || !/^\d{10}$/.test(mobile)) {
+            alert('Please fill valid Name, 12-digit Aadhaar, and 10-digit Mobile.');
+            return false;
+          }
+          break;
+        case 6:
+          const date = document.getElementById('deliveryDate').value;
+          if (!date) { alert('Select a delivery date.'); return false; }
+          const d = new Date(date);
+          const month = d.getMonth() + 1;
+          // Peak season logic: April, May, October, November
+          if ([4,5,10,11].includes(month)) state.seasonalSurcharge = 2000;
+          else state.seasonalSurcharge = 0;
+          break;
+        case 7: break;
+      }
+      return true;
+    }
+
+    function resetApp() {
+      location.reload();
+    }
+
+    // Support chat toggle
+    function toggleChat() {
+      document.getElementById('chatModal').classList.toggle('open');
+    }
+
+    // Confetti animation (simple)
+    function launchConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const particles = [];
+      for (let i=0; i<200; i++) {
+        particles.push({
+          x: Math.random()*canvas.width,
+          y: Math.random()*canvas.height - canvas.height,
+          size: Math.random()*8+4,
+          color: ['#F57C00','#2E7D32','#FFD700','#3E2723'][Math.floor(Math.random()*4)],
+          speedY: Math.random()*3+2,
+          speedX: (Math.random()-0.5)*2,
+          rotation: Math.random()*360
+        });
+      }
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        particles.forEach(p => {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation * Math.PI/180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+          ctx.restore();
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rotation += 2;
+          if (p.y > canvas.height+20) p.y = -20;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // Set min date to today
+    document.getElementById('deliveryDate').addEventListener('focus', function() {
+      this.min = new Date().toISOString().split('T')[0];
+    });
+
+    // Initial render
+    renderBrandButtons();
+    renderAddonImplements();
+    showStep(1);
+    // If implement-only category, adjust step visibility
+    document.getElementById('step-category').addEventListener('click', function(e) {
+      if (e.target.classList.contains('logo-btn')) {
+        // after click, we'll call setCategory which updates rendering
+      }
+    });
+  </script>
+</body>
+</html>
